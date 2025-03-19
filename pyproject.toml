@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "indonesia-worldcup-qualifier-prediction"
+version = "0.1.0"
+description = ""
+authors = ["Adiguna7 <sevensag@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+numpy = "^2.2.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
