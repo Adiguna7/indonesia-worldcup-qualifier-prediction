@@ -6,10 +6,10 @@ import (
 	"maps"
 	"math"
 	"math/rand"
-	"os"
 	"sort"
 )
 
+// TODO: UPDATE ELO FROM ELO RATING WEB
 const JAPAN_ELO = 1888
 const AUSTRALIA_ELO = 1718
 const INDONESIA_ELO = 1317
@@ -86,6 +86,8 @@ var fifaRanks map[string]int = map[string]int{
 	"chn": 98,
 }
 
+var maxRank, minRank = findMinMax(fifaRanks)
+
 var initialPoints map[string]int = map[string]int{
 	"jpn": 16,
 	"aus": 7,
@@ -143,7 +145,6 @@ func main() {
 
 		if err != nil {
 			log.Fatalf("error: %v", err)
-			os.Exit(1)
 		}
 
 		matchProbability[match] = probabilityResult
@@ -197,6 +198,14 @@ func main() {
 }
 
 func calculateMatchProbability(match Match) (MatchProbability, error) {
+	clampFunction := func(value float64) float64 {
+		if value < 0 {
+			return 0
+		}
+
+		return value
+	}
+
 	homeTeam := match.homeTeam
 	awayTeam := match.awayTeam
 
@@ -220,6 +229,11 @@ func calculateMatchProbability(match Match) (MatchProbability, error) {
 	// home advantages
 	pHomeWin += 0.10
 
+	// clamp value
+	pHomeWin = clampFunction(pHomeWin)
+	pAwayWin = clampFunction(pAwayWin)
+	pDraw = clampFunction(pDraw)
+
 	//  normalization
 	total := pHomeWin + pDraw + pAwayWin
 	pHomeWin /= total
@@ -234,7 +248,7 @@ func calculateMatchProbability(match Match) (MatchProbability, error) {
 }
 
 func calculateEloProbability(homeElo int, awayElo int) float64 {
-	return 1 / (1 + math.Pow(float64(10), float64((awayElo-homeElo)/400)))
+	return 1 / (1 + math.Pow(float64(10), float64(awayElo-homeElo)/400))
 }
 
 func calculateRankProbability(match Match) ProbabilityBoost {
@@ -243,22 +257,21 @@ func calculateRankProbability(match Match) ProbabilityBoost {
 
 	// assume the full boost of higher fifa rating is 5%
 	// but this adjustable by how far both of team rank
-	maxRank, minRank := findMinMax(fifaRanks) // TODO: PLACE THIS IN FILE SCOPE LEVEL
 	maxRankDifference := maxRank - minRank
 
 	rankDifference := fifaRanks[homeTeam] - fifaRanks[awayTeam]
 	if rankDifference < 0 {
-		boost := 0.05 * float64(rankDifference) / float64(maxRankDifference)
+		boost := 0.05 * (float64(-rankDifference) / float64(maxRankDifference))
 		return ProbabilityBoost{
-			homeTeam: boost,
-			awayTeam: 0.0,
+			homeTeam: 0.0,
+			awayTeam: boost,
 		}
 	}
 
-	boost := 0.05 * float64(-rankDifference) / float64(maxRankDifference)
+	boost := 0.05 * (float64(rankDifference) / float64(maxRankDifference))
 	return ProbabilityBoost{
-		homeTeam: 0.0,
-		awayTeam: boost,
+		homeTeam: boost,
+		awayTeam: 0.0,
 	}
 }
 
