@@ -46,8 +46,9 @@ This script simulates the upcoming Asian World Cup qualifiers for Group C using 
 
 ## Running the Simulation
 To execute the simulation, run:
+only first time
 ```sh
-poetry install (only first time)
+poetry install
 ```
 ```sh
 python src/main.py
@@ -56,6 +57,8 @@ python src/main.py
 ## Improvement
 - Implement a proper scaling factor, such as a sigmoid function.
 - Consider goal counts from previous matches as part of the performance boost calculation.
+- Implement web base to animate the simulation
+- Scrape match result from web instead hardcoded
 
 ## Author
 Suryo Adiguna
